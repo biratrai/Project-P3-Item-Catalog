@@ -1,0 +1,88 @@
+<!doctype html>
+<html>
+  <head>
+    <!-- Bootstrap core CSS -->
+    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->    
+
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+    <style type="text/css">
+      
+      html,body {
+        height: 100%;
+      }
+      .wrapper {
+            min-height: 100%;
+            height: auto !important;
+            height: 100%;
+            margin: 0 auto -63px;
+            background-color: #18bc9c;
+      }
+
+      .footer, .push {
+        height: 4em;
+      }
+
+      .footer {
+        background-color:#00CB63;
+        color:white; 
+        clear: both;
+      }
+
+    </style>
+
+    <!-- This is the title section -->
+    {% block head %}
+      <title>{% block title %}{% endblock %} - Share Projects</title>
+    {% endblock %}
+  </head>
+
+  <body>
+    <!-- This is the header section -->
+  <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container-fluid">
+      <div class="navbar-header">
+        <a class="navbar-brand" href="#">Project Portfolio</a>
+        {%if 'username' not in session %}
+          <a href="{{url_for('showLogin')}}">Click Here to Log in </a>
+        {% else %}
+          <a href="{{url_for('gdisconnect')}}">Disconnect </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+<div class="wrapper">
+  <div class="container">
+    <div class="jumbotron">
+      <h1>Welcome</h1>
+      <h2>Show case your projects here!</h2> 
+    </div>
+    <div class="row">
+      <div class="col-sm-4" style="background-color:#34CB95;">
+          {% block content %}{% endblock %}
+      </div>
+    <div class="col-sm-8" style="background-color:#63CB84;">
+        {% block categoryContent %}{% endblock %}
+    </div>
+    </div>
+    <div class="push"></div>
+  </div>
+</div>
+
+    <!-- This is the footer section -->
+    <div class="footer">
+      <div class="container">
+        {% block footer %}
+      &copy; Copyright 2010 by <a href="http://domain.invalid/">you</a>.
+      {% endblock %}
+      </div>
+    </div>
+
+  </body>
+</html>

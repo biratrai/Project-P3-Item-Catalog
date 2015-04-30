@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+    .other {color: #336699}
+    
+    }
+  </style>
+{% endblock %}
+
+{% block categoryContent %} 
+<h1>{{ category_name }}</h1>
+{% set count = 1 %}
+
+{% for project_name in project_name %}	
+  <a href="{{ url_for('showProject',project=project,projectcategory=projectcategory,project_no=count)}}">{{ project_name }}</a>
+
+  <a href="{{ url_for('editProject',project=project,projectcategory=projectcategory,project_no=count) }}">Edit</a> 
+  <a href="{{ url_for('deleteProject',project=project,projectcategory=projectcategory,project_no=count) }}">Delete</a> </br></br>
+  {% set count = count + 1 %}
+{% endfor %}
+
+
+{% endblock %}

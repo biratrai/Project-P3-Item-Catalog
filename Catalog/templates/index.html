@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block title %}Udacity{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+    .other {color: #336699}
+    
+    }
+  </style>
+{% endblock %}
+
+{% block content %}
+  <p class="important">    
+    <p><a href="{{ url_for('projectMain',project='fullstack') }}">{{ "Project: "+ 'FullStack' }}</a></p>
+    <p><a href="{{ url_for('projectMain',project='frontend') }}">{{ "Project: "+ 'FrontEnd' }}</a></p>
+    <p><a href="{{ url_for('projectMain',project='ios') }}">{{ "Project: "+ 'ios' }}</a></p>
+    <p><a href="{{ url_for('projectMain',project='android') }}">{{ "Project: "+ 'Android' }}</a></p>
+    <p><a href="{{ url_for('projectMain',project='others') }}">{{ "Project: "+ 'Others' }}</a></p>      
+{% endblock %}
+
+
+

@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+{% block head %}
+  {{ super() }}
+<style type="text/css">
+    .important { color: #336699; }
+    .other {color: #336699}
+    
+    }
+  </style>
+{% endblock %}
+
+{% block categoryContent %} 
+<h1> This is the new project World! {{project_name}}</h1>
+
+  
+	<input type='text' size='30' name='name' placeholder="{{ project_name }}">
+
+	<input type='submit' value='Edit'>
+  	
+  
+
+
+
+{% endblock %}	
+
