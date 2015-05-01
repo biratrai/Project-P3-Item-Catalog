@@ -15,3 +15,12 @@ def get_user_from_username(username):
     """Get user object from given username."""
     return session.query(ProjectName).filter_by(name=name).first()
 
+from database_setup import Base
+from sqlalchemy import create_engine
+
+engine = create_engine('sqlite:///project.db')
+Base.metadata.reflect(engine)
+
+Base.metadata.tables.keys()
+
+Base.metadata.tables['projectitems']

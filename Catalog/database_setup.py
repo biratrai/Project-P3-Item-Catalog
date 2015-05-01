@@ -32,16 +32,42 @@ class Project(Base):
     projectcategory_id =Column(String(64),nullable = False)
     user = relationship(User)
 
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+           'name'           : self.project_url,
+           'id'             : self.project_item_id,
+           'description'    : self.project_description,
+           'created'        : self.createdTime,
+           'projectname'    : self.projectname_id,
+           'projectcategory': self.projectcategory_id,
+           'author'         : self.author_id,
+        }
+
 class Comments(Base):
     __tablename__ = 'comments'    
 
     comment_id = Column(Integer,primary_key = True)
     content = Column(String(200),nullable =False)
-    #createdTime = Column(DATETIME, default=func.current_timestamp())
+    createdTime = Column(DATETIME, default=func.current_timestamp())
     author_id = Column(Integer,ForeignKey('users.id'))
     project_id = Column(Integer,ForeignKey('projectitems.project_item_id'))
     user = relationship(User)
-    projectitems = relationship(Project)    
+    projectitems = relationship(Project)  
+
+    @property
+    def serialize(self):
+        """Return object data in easily serializeable format"""
+        return {
+            'id'        : self.comment_id,
+            'content'   : self.content,
+            'author'    : self.author_id,
+            'projectid' : self.project_id,
+            'created'   : self.createdTime,
+        }
+
+      
 
 # class ProjectName(Base):
 #     __tablename__ = 'projectnames'

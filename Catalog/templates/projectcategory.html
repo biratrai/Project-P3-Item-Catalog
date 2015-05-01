@@ -21,5 +21,13 @@
   {% set count = count + 1 %}
 {% endfor %}
 
+{% for i in project_list %}  
+  <a href="#">{{ i.project_item_id }}</a></br>
+  <a href="#">{{ i.project_url }}</a></br>
+  <a href="#">{{ i.projectcategory_id }}</a></br>
+  <a href="#">{{ i.author_id }}</a></br>
+  <a href="#">{{ i.author_id }}</a></br>
+  <a href="#">{{ i.project_description }}</a></br>
+{% endfor %}
 
 {% endblock %}

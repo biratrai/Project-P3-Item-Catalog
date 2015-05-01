@@ -2,7 +2,7 @@ from flask import Flask,render_template, url_for, redirect, flash, request, json
 from Catalog import app
 
 # Imports for DB Session
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Project, Comments
 
@@ -19,11 +19,17 @@ import json
 from flask import make_response
 import requests
 
-engine = create_engine('sqlite:///project.db')
-Base.metadata.bind = engine
+CLIENT_ID = json.loads(
+  open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
+APPLICATION_NAME= "Restaurant Menu Application"
 
+engine = create_engine('sqlite:///Catalog/project.db')
+Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
+
+project_name_id = "fend"
+project_category_id="p1"
 
 project_name = ['FullStack','Frontend','ios','Android','Others']
 project_fullstack = ['Movie Trailer Website','Tournament Results','Item Catalog','Conference Organization App','Linux Server Configuration']
@@ -36,9 +42,20 @@ projects = ["Project1","Project2","Project3","Project4","Project5"]
 projects_description  = {"Project1":"This is the project one","Project2":"This is the prject 2","Project3":"This is project 3",
 			"Project4": "This is project 4","Project5":"This is the project 5"}
 
-CLIENT_ID = json.loads(
-  open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME= "Restaurant Menu Application"
+@app.route('/hello')
+def hello():
+	c = session.query(Project).filter_by(projectname_id = "fend", projectcategory_id="p1").all();
+	
+	print c
+	for i in c:
+		print "project item id: ", i.project_item_id
+		print "project url: ", i.project_url
+		print "project category id: ", i.projectcategory_id
+		print "author id: ", i.author_id
+		print "project name id: ", i.projectname_id
+		print "\n"
+
+	return render_template("hello.html",project22=c)
 
 #Create anti-forgery state token
 @app.route('/login')
@@ -262,21 +279,31 @@ def projectMain(project):
 		#return render_template('error.html')
 	return render_template('project.html',project_category = project_category,project=str(project))  
 
+#JSON APIs to view Project Information
+@app.route('/<project>/<projectcategory>/JSON')
+def projectCategoryJSON(project,projectcategory):
+	print "i m JSON",project, projectcategory, type(str(projectcategory))
+	project_list = session.query(Project).filter_by(projectname_id = "fend",projectcategory_id="p1").all()	
+	print project_list
+	return jsonify(project_list=[i.serialize for i in project_list])
+	#return render_template('projectcategory.html',project_name = projects,project=str(project),projectcategory=str(projectcategory)) 
+
 # Route for Project Category Page
 @app.route('/<project>/<projectcategory>/')
 def projectCategory(project,projectcategory):
 	print "i m here",project, projectcategory, type(str(projectcategory))
-	project_list = session.query(Project).filter_by(projectname_id = "fend",projectcategory_id="p1")
-	print type(project_list)
-	for i in project_list:
-		print "hello"
-		print "project item id: ", dict(i.project_item_id)
+	c = session.query(Project).filter_by(projectname_id = "fend", projectcategory_id="p1").all();
+	
+	print c
+	for i in c:
+		print "project item id: ", i.project_item_id
 		print "project url: ", i.project_url
 		print "project category id: ", i.projectcategory_id
 		print "author id: ", i.author_id
 		print "project name id: ", i.projectname_id
 		print "\n"
-	return render_template('projectcategory.html',project_name = projects,project=str(project),projectcategory=str(projectcategory)) 
+	return render_template('projectcategory.html',project_name = projects,project=str(project),
+		projectcategory=str(projectcategory),project_list=c) 	
 
 @app.route('/<project>/<projectcategory>/<int:project_no>/')       
 def showProject(project,projectcategory,project_no):

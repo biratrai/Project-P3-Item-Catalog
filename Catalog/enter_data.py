@@ -5,7 +5,7 @@ from database_setup import Base, User, Project, Comments
 
 # create a session and connect to the DB 
 engine = create_engine('sqlite:///project.db')
-
+Base.metadata.reflect(engine)
 # Bind the engine to the metadata of the Base class so that the
 # declaratives can be accessed through a DBSession instance
 Base.metadata.bind = engine
