@@ -28,9 +28,6 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
-project_name_id = "fend"
-project_category_id="p1"
-
 project_name = ['FullStack','Frontend','ios','Android','Others']
 project_fullstack = ['Movie Trailer Website','Tournament Results','Item Catalog','Conference Organization App','Linux Server Configuration']
 project_frontend = ['PROJECT P1: Build a Portfolio Site','PROJECT P2: Interactive Resume','PROJECT P3: Classic Arcade Game Clone',
@@ -42,20 +39,6 @@ projects = ["Project1","Project2","Project3","Project4","Project5"]
 projects_description  = {"Project1":"This is the project one","Project2":"This is the prject 2","Project3":"This is project 3",
 			"Project4": "This is project 4","Project5":"This is the project 5"}
 
-@app.route('/hello')
-def hello():
-	c = session.query(Project).filter_by(projectname_id = "fend", projectcategory_id="p1").all();
-	
-	print c
-	for i in c:
-		print "project item id: ", i.project_item_id
-		print "project url: ", i.project_url
-		print "project category id: ", i.projectcategory_id
-		print "author id: ", i.author_id
-		print "project name id: ", i.projectname_id
-		print "\n"
-
-	return render_template("hello.html",project22=c)
 
 #Create anti-forgery state token
 @app.route('/login')
@@ -252,9 +235,9 @@ def fbconnect():
 @app.route('/')
 @app.route('/index')
 def index():
-	#return "helo"
 	return render_template("index.html",title='Home')
 
+# Route for favicon request
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
@@ -263,8 +246,6 @@ def favicon():
 # Route for Project Page 
 @app.route('/<project>/')
 def projectMain(project):
-	print project,type(project)
-	print "ios"
 	if((str(project)) == 'fullstack'):
 		project_category=project_fullstack
 	elif((str(project)) == 'frontend'):
@@ -275,40 +256,29 @@ def projectMain(project):
 		project_category = project_android
 	elif((str(project)) == 'others'):
 		project_category = project_other
-	
-		#return render_template('error.html')
 	return render_template('project.html',project_category = project_category,project=str(project))  
 
 #JSON APIs to view Project Information
 @app.route('/<project>/<projectcategory>/JSON')
 def projectCategoryJSON(project,projectcategory):
 	print "i m JSON",project, projectcategory, type(str(projectcategory))
-	project_list = session.query(Project).filter_by(projectname_id = "fend",projectcategory_id="p1").all()	
+	project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()	
 	print project_list
 	return jsonify(project_list=[i.serialize for i in project_list])
-	#return render_template('projectcategory.html',project_name = projects,project=str(project),projectcategory=str(projectcategory)) 
 
 # Route for Project Category Page
 @app.route('/<project>/<projectcategory>/')
 def projectCategory(project,projectcategory):
 	print "i m here",project, projectcategory, type(str(projectcategory))
-	c = session.query(Project).filter_by(projectname_id = "fend", projectcategory_id="p1").all();
-	
-	print c
-	for i in c:
-		print "project item id: ", i.project_item_id
-		print "project url: ", i.project_url
-		print "project category id: ", i.projectcategory_id
-		print "author id: ", i.author_id
-		print "project name id: ", i.projectname_id
-		print "\n"
+	project_query = session.query(Project).filter_by(projectname_id = project, projectcategory_id=projectcategory).all();
 	return render_template('projectcategory.html',project_name = projects,project=str(project),
-		projectcategory=str(projectcategory),project_list=c) 	
+		projectcategory=str(projectcategory),project_list=project_query) 	
 
 @app.route('/<project>/<projectcategory>/<int:project_no>/')       
 def showProject(project,projectcategory,project_no):
-	print "hola"
-	return render_template('single_project.html',project=project,projectcategory=projectcategory,project_no=project_no)
+	project_query = session.query(Project).filter_by(project_item_id = project_no).all();
+	return render_template('single_project.html',project=project,projectcategory=projectcategory,
+		project_no=project_no,project_list=project_query)
 
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
 def editProject(project,projectcategory,project_no):
@@ -322,3 +292,21 @@ def deleteProject(project,projectcategory,project_no):
 def newProject(project,project_no):
 	return project+str(project_no)+"new"
 	#return render_template('new_project.html')
+
+def getUserID(email):
+    try:
+        user = session.query(User).filter_by(email = email).one()
+        return user.id
+    except:
+        return None
+
+def getUserInfo(user_id):
+    user = session.query(User).filter_by(id = user_id).one()
+    return 
+
+def createUser(login_session):
+    newUser = User(name = login_session['username'], email = login_session['email'], picture = login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email = login_session['email']).one()
+    return user.id   
