@@ -16,7 +16,6 @@ class User(Base):
     __tablename__ = 'users'
    
     id = Column(Integer, primary_key = True)
-    #social_id = Column(String(64), nullable=False, unique=True)
     name = Column(String(250))
     email = Column(String(64))
     
@@ -30,7 +29,7 @@ class Project(Base):
     author_id = Column(Integer,ForeignKey('users.id'))
     projectname_id = Column(String(64),nullable = False)
     projectcategory_id =Column(String(64),nullable = False)
-    user = relationship(User)
+    user = relationship(User,cascade = 'delete')
 
     @property
     def serialize(self):
@@ -53,8 +52,8 @@ class Comments(Base):
     createdTime = Column(DATETIME, default=func.current_timestamp())
     author_id = Column(Integer,ForeignKey('users.id'))
     project_id = Column(Integer,ForeignKey('projectitems.project_item_id'))
-    user = relationship(User)
-    projectitems = relationship(Project)  
+    user = relationship(User,cascade = 'delete')
+    projectitems = relationship(Project,cascade = 'delete')  
 
     @property
     def serialize(self):
@@ -66,31 +65,6 @@ class Comments(Base):
             'projectid' : self.project_id,
             'created'   : self.createdTime,
         }
-
-      
-
-# class ProjectName(Base):
-#     __tablename__ = 'projectnames'
-
-#     id = Column(Integer, primary_key = True)
-#     name =Column(String(80), nullable = False)
-
-# class ProjectCatgory(Base):
-#     __tablename__ = 'projectcategories'
-
-#     id = Column(Integer, primary_key = True)
-#     name =Column(String(80), nullable = False)
-
-# class ProjectItem(Base):
-#     __tablename__ = 'projectitems'
-
-#     project_item_id = Column(Integer,primary_key = True)
-#     project_url = Column(String(250), nullable= False)
-#     project_description = Column(String(250))
-#      createdTime = Column(DATETIME,default=func.current_timestamp())
-#     description = Column(String(250))
-#     author = Column(Integer,ForeignKey('user.id'))
-#     user = relationship(User)
       
 # create_engine function let's us know which database to communicate to
 engine = create_engine('sqlite:///project.db')

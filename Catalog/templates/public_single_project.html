@@ -11,15 +11,11 @@
   
   <h1>{{ project }}</h1></br></br>
   <a href="#">Project url</a></br>
-  <a href="{{ url_for('editProject',project=project, projectcategory=projectcategory, project_no=project_no) }}"><button type="button">Edit Project</button></a>
-  <a href="{{ url_for('deleteProject',project=project, projectcategory=projectcategory, project_no=project_no) }}"><button type="button">Delete Project</button></a></br>
-  
   <p>Project Description</p>
   <p>{{ projectcategory }}</p>
   <p>Comments</p>
 
   <p>{{ project_no }}</p>
-  <p>{{ project_list }}</p>
 
 
 

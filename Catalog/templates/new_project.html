@@ -1,7 +1,31 @@
-<html>
+{% extends "index.html" %}
+{% block head %}
+  <title>{% block title %}{% endblock %} Delete Project</title>
+{% endblock %}
 
-<body>
-<h1> This is the new project World! </h1>
-</body>
-
-</html>
+{% block categoryContent %} 
+	<div class="row divider green">
+		<div class="col-md-12"></div>
+	</div>
+	<div class="row banner menu">
+		<div class="col-md-11 col-md-offset-1 padding-none">
+			<h1>New Project</h1>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-6 col-md-offset-1 padding-top">
+			<form action="#" method = "post">
+				<div class="form-group">
+				<label for="name">Project Url:</label>
+				<input type ="text" class="form-control" maxlength="100" name="url" placeholder="Link to the project">
+				
+				<label for="description">Project Description:</label>
+				<textarea class="form-control" maxlength="250" rows="3" name="description" placeholder="Description of the course"></textarea>
+				
+				<button type="submit" class="btn btn-default" id="submit" type="submit">
+				<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Create</button>
+				</div>
+			</form>
+		</div>
+	</div>
+{% endblock %}	

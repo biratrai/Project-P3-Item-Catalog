@@ -1,4 +1,6 @@
 {% extends "index.html" %}
+
+<!-- This is the title section -->
 {% block title %}Udacity{% endblock %}
 {% block head %}
   {{ super() }}
@@ -9,14 +11,13 @@
 
 {% block categoryContent %}
   
-  <h1>{{ project }}</h1></br>
+  <h1>{{ project|upper }}</h1></br>
   {% set count = 1 %}
 
   {% for project_category in project_category %}
   
-  	<p><a href=" {{ url_for('projectCategory',project=project,projectcategory='p'+count|string) }}">{{ "Project: "+ project_category }}</a></p> 
-<!--  	<p><a href=" {{ url_for('projectCategory',project=project,projectcategory=project_category|lower) }}">{{ "Project: "+ project_category }}</a></p> -->
-  	{% set count = count + 1 %}
+    <p><a href=" {{ url_for('projectCategory',project=project,projectcategory='p'+count|string) }}">{{ "Project: "+ project_category }}</a></p> 
+    {% set count = count + 1 %}
   {% endfor %}
 
 

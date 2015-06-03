@@ -8,10 +8,9 @@
     <link href='http://fonts.googleapis.com/css?family=Roboto:400,300,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
 
-    <!-- Custom styles for this template -->    
-
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
 
+<!-- Custom styles for this template -->   
     <style type="text/css">
       
       html,body {
@@ -36,50 +35,59 @@
       }
 
     </style>
-
+    
     <!-- This is the title section -->
     {% block head %}
-      <title>{% block title %}{% endblock %} - Share Projects</title>
+      
     {% endblock %}
+
   </head>
 
   <body>
-    <!-- This is the header section -->
-  <nav class="navbar navbar-inverse navbar-fixed-top">
-    <div class="container-fluid">
-      <div class="navbar-header">
-        <a class="navbar-brand" href="#">Project Portfolio</a>
-        {%if 'username' not in session %}
-          <a href="#">Click Here to Log in </a>
-        {% else %}
-          <a href="{{url_for('gdisconnect')}}">Disconnect </a>
-        {% endif %}
+    
+  <div class="wrapper">
+    <div class="container">
+      <div class="jumbotron">
+        <h1>Welcome</h1>
+        <h2>Show case your projects here!</h2> 
       </div>
-    </div>
-  </nav>
-<div class="wrapper">
-  <div class="container">
-    <div class="jumbotron">
-      <h1>Welcome</h1>
-      <h2>Show case your projects here!</h2> 
-    </div>
-    <div class="row">
-      <div class="col-sm-4" style="background-color:#34CB95;">
-          {% block content %}{% endblock %}
+
+      <!-- This is the flash message section -->
+      <div class = 'flash'>
+            {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            
+          <ul>
+          {% for message in messages %}
+              <li> <strong> {{ message }} </strong> </li>
+          {% endfor %}
+          </ul>
+          {% endif %}
+        {% endwith %}
+
       </div>
-    <div class="col-sm-8" style="background-color:#63CB84;">
-        {% block categoryContent %}{% endblock %}
+      <div class="row">
+        <div class="col-sm-4" style="background-color:#34CB95;">
+        <!-- This is the main content section -->
+            {% block content %}{% endblock %}
+        </div>
+      <div class="col-sm-8" style="background-color:#63CB84;">
+      <!-- This is the Category content section -->
+          {% block categoryContent %}{% endblock %}
+      </div>
+      </div>
+      <div class="push"></div>
     </div>
-    </div>
-    <div class="push"></div>
   </div>
-</div>
 
     <!-- This is the footer section -->
     <div class="footer">
       <div class="container">
         {% block footer %}
-      &copy; Copyright 2010 by <a href="http://domain.invalid/">you</a>.
+      <a class="ic fa fa-linkedin-square fa-3x" href="#" title="Linkedin" target="_blank"></a>
+      <a class="ic fa fa-twitter fa-3x contact-ic" href="#" title="Twitter" target="_blank"></a>
+      <a class="ic fa fa-github fa-3x contact-ic" href="#" title="GitHub" target="_blank"></a>
+      <a class="ic fa fa-envelope fa-3x contact-ic" href="mailto:birat.rc.rai@.gmail.com" title="Email" target="_blank"></a>
       {% endblock %}
       </div>
     </div>
