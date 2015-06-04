@@ -21,4 +21,4 @@ Once you've registered the app and set Client ID/Secret in the app.py file, you 
 
 On your virtual machine, go to /vagrant/nd_sharables directory, then type $ python app.py. This will launch the application.
 
-You can check out the page from your browser at http://localhost:5000.
+You can check out the page from your browser at http://localhost:8000.
