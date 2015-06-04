@@ -3,9 +3,8 @@ This is the third project of the Full Stack Nano Degree from Udacity
 
 This project was developed under the [**Full-Stack-Developer Nano Degree Program**](https://www.udacity.com/course/nd004) offered by Udacity.
 
-**Table of contents**
+**How to Run the Application**
 -----------------------------------------------------------
-How to Run
 
 First, you need to install VirtualBox and Vagrant on your machine.
 
