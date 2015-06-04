@@ -169,39 +169,41 @@ def gdisconnect():
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
-  print request.args.get('state'),"login",login_session['state']
-    if request.args.get('state') != login_session['state']:
-      response = make_response(json.dumps('Invalid state parameter.'), 401)
-      response.headers['Content-Type'] = 'application/json'
-      return response
-    access_token = request.data
-    print "access token received %s "% access_token
+  if request.args.get('state') != login_session['state']:
+    response = make_response(json.dumps('Invalid state parameter.'), 401)
+    response.headers['Content-Type'] = 'application/json'
+    return response
+  access_token = request.data
 
   #Exchange client token for long-lived server-side token
- ## GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}&client_secret={app-secret}&fb_exchange_token={short-lived-token} 
-    app_id = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_id']
-    app_secret = json.loads(open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[1]
+  # GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}&client_secret={app-secret}&fb_exchange_token={short-lived-token} 
+  app_id = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_id']
+  app_secret = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_secret']
+  url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
+  h = httplib2.Http()
+  result = h.request(url, 'GET')[1]
 
-    #Use token to get user info from API 
-    userinfo_url =  "https://graph.facebook.com/v2.2/me"
-    #strip expire tag from access token
-    token = result.split("&")[0]
-    print "token: ", token
-  
-    url = 'https://graph.facebook.com/v2.2/me?%s' % token
-    h = httplib2.Http()
-    result = h.request(url, 'GET')[1]
-    #print "url sent for API access:%s"% url
-    #print "API JSON result: %s" % result
-    data = json.loads(result)
+  #Use token to get user info from API 
+  userinfo_url =  "https://graph.facebook.com/v2.2/me"
+
+  #strip expire tag from access token
+  token = result.split("&")[0]
+
+  url = 'https://graph.facebook.com/v2.2/me?%s' % token
+  h = httplib2.Http()
+  result = h.request(url, 'GET')[1]
+  print "result\n",result
+
+  data = json.loads(result)
+  print "\ndata\n",type(data),data
   login_session['provider'] = 'facebook'
   login_session['username'] = data["name"]
-  login_session['email'] = data["email"]
+  login_session['email'] = data["name"]+"@facebook.com"
   login_session['facebook_id'] = data["id"]
-    
+
+  # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
+  stored_token = token.split("=")[1]
+  login_session['access_token'] = stored_token
 
   #Get user picture
   url = 'https://graph.facebook.com/v2.2/me/picture?%s&redirect=0&height=200&width=200' % token
@@ -216,7 +218,7 @@ def fbconnect():
   if not user_id:
     user_id = createUser(login_session)
   login_session['user_id'] = user_id
-      
+
   output = ''
   output +='<h1>Welcome, '
   output += login_session['username']
@@ -225,7 +227,6 @@ def fbconnect():
   output += '<img src="'
   output += login_session['picture']
   output +=' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-
 
   flash ("Now logged in as %s" % login_session['username'])
   return output  
@@ -270,7 +271,7 @@ def favicon():
 # Route for Project Page 
 @app.route('/<project>/')
 def projectMain(project):
-  
+  print "Inside Project Main"
   if((str(project)) == 'fullstack'):
     project_category = project_fullstack
   elif((str(project)) == 'frontend'):
