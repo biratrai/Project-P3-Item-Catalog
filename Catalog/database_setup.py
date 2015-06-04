@@ -3,6 +3,7 @@ import sys
 
 # import sqlalchemy dependencies
 from sqlalchemy import Column, ForeignKey, Integer, String, DATETIME, func
+from datetime import datetime
 
 # Declarative allows Table, mapper(), and class objects, which is used to define a mapped class, to be expressed at once within the class declaration.
 from sqlalchemy.ext.declarative import declarative_base
@@ -38,7 +39,7 @@ class Project(Base):
            'name'           : self.project_url,
            'id'             : self.project_item_id,
            'description'    : self.project_description,
-           'created'        : self.createdTime,
+           'created'        : str(self.createdTime),
            'projectname'    : self.projectname_id,
            'projectcategory': self.projectcategory_id,
            'author'         : self.author_id,

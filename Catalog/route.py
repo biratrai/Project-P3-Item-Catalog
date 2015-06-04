@@ -290,7 +290,7 @@ def projectMain(project):
 def projectCategoryJSON(project,projectcategory):
   # print "i m JSON",project, projectcategory, type(str(projectcategory))
   project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()  
-  # print project_list
+  print project_list
   return jsonify(project_list=[i.serialize for i in project_list])
 
 # Route for Project Category Page
