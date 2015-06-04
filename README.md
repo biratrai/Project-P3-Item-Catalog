@@ -15,10 +15,8 @@ Go to the vagrant directory in the cloned repository, then open a terminal windo
 
 Once it is up and running, type $ vagrant ssh to log into it. This will log your terminal in to the virtual machine, and you'll get a Linux shell prompt.
 
-Open the app.py file in nd_sharables directory, you'll see an instruction on how to register this app on GitHub and obtain Client ID.
+Go inside the Catalog directory and run the database_setup.py and enter_data.py accordingly to setup database and populate with fake datas.
 
-Once you've registered the app and set Client ID/Secret in the app.py file, you are now ready to launch the app.
-
-On your virtual machine, go to /vagrant/nd_sharables directory, then type $ python app.py. This will launch the application.
+Run the runserver.py python file, This will launch the application.
 
 You can check out the page from your browser at http://localhost:8000.
