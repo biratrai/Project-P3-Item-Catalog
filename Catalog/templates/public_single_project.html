@@ -1,0 +1,25 @@
+{% extends "index.html" %}
+{% block title %}Udacity{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+
+{% block categoryContent %}
+  
+  <h1>{{ project }}</h1></br></br>
+  <a href="#">Project url</a></br>
+  <p>Project Description</p>
+  <p>{{ projectcategory }}</p>
+  <p>Comments</p>
+
+  <p>{{ project_no }}</p>
+
+
+
+
+
+{% endblock %}
+
