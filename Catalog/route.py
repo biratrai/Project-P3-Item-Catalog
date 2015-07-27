@@ -1,5 +1,6 @@
 from flask import Flask,render_template, url_for, redirect, flash, request, jsonify 
 from Catalog import app
+from datetime import datetime
 
 # Imports for DB Session
 from sqlalchemy import create_engine, asc
@@ -19,6 +20,9 @@ import json
 from flask import make_response
 import requests
 
+# Imports for XML EndPoints
+import xml.etree.ElementTree as ET
+
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME= "Restaurant Menu Application"
@@ -28,16 +32,17 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+# Project Variables
 project_name = ['FullStack','Frontend','ios','Android','Others']
 project_fullstack = ['Movie Trailer Website','Tournament Results','Item Catalog','Conference Organization App','Linux Server Configuration']
 project_frontend = ['PROJECT P1: Build a Portfolio Site','PROJECT P2: Interactive Resume','PROJECT P3: Classic Arcade Game Clone',
-  'PROJECT P4: Website Optimization','PROJECT P5: Neighborhood Map','PROJECT P6: Feed Reader Testing','Additional Projects']
+	'PROJECT P4: Website Optimization','PROJECT P5: Neighborhood Map','PROJECT P6: Feed Reader Testing','Additional Projects']
 project_ios = ['PROJECT P1: Pitch Perfect','PROJECT P2: MemeMe','PROJECT P3: On the Map','PROJECT P4: Virtual Tourist','Additional Projects']
-project_android = ['P1', 'P2']  
+project_android = ['P1', 'P2']	
 project_other = ['O1', 'O2']
-projects = ["Project1","Project2","Project3","Project4","Project5"] 
+projects = ["Project1","Project2","Project3","Project4","Project5"]	
 projects_description  = {"Project1":"This is the project one","Project2":"This is the prject 2","Project3":"This is project 3",
-      "Project4": "This is project 4","Project5":"This is the project 5"}
+			"Project4": "This is project 4","Project5":"This is the project 5"}
 
 
 #Create anti-forgery state token
@@ -45,7 +50,6 @@ projects_description  = {"Project1":"This is the project one","Project2":"This i
 def showLogin():
   state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
   login_session['state'] = state
-  #return "The current session state is %s" % login_session['state']
   return render_template('login.html', STATE = state)
 
 @app.route('/gconnect', methods=['POST'])
@@ -114,12 +118,10 @@ def gconnect():
   answer = requests.get(userinfo_url, params=params)
 
   data = answer.json()
-    #data = json.loads(answer.text)
   login_session['provider'] = 'google'
   login_session['username'] = data['name']
   login_session['picture'] = data['picture']
   login_session['email'] = data['email']
-  # print "username: ", login_session['username']
 
   # see if user exists
   user_id = getUserID(login_session['email'])
@@ -212,8 +214,8 @@ def fbconnect():
   data = json.loads(result)
 
   login_session['picture'] = data["data"]["url"]
-    
-  # see if user exists
+	  
+	# see if user exists
   user_id = getUserID(login_session['email'])
   if not user_id:
     user_id = createUser(login_session)
@@ -229,7 +231,19 @@ def fbconnect():
   output +=' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
   flash ("Now logged in as %s" % login_session['username'])
-  return output  
+  return output
+
+@app.route('/fbdisconnect')
+def fbdisconnect():
+  facebook_id = login_session['facebook_id']
+
+  # The access token must me included to successfully logout
+  access_token = login_session['access_token']
+  url = 'https://graph.facebook.com/%s/permissions' % (facebook_id,access_token)
+  h = httplib2.Http()
+  result = h.request(url, 'DELETE')[1]
+  return "you have been logged out"
+
 
 @app.route('/disconnect')
 def disconnect():
@@ -245,7 +259,6 @@ def disconnect():
     del login_session['username']
     del login_session['email']
     del login_session['picture']
-    # del login_session['user_id']
     del login_session['provider']
     flash("You have successfully been logged out.")
     return redirect(url_for('index'))
@@ -257,16 +270,21 @@ def disconnect():
 @app.route('/')
 @app.route('/index')
 def index():
-  if 'username' not in login_session:
-    return render_template("public_index.html",title='Home')
-  else:
-    return render_template("index.html",title='Home')
-  
+	if 'username' not in login_session:
+		return render_template("public_index.html",title='Home')
+	else:
+		return render_template("index.html",title='Home')
+	
 # Route for favicon request
 @app.route('/favicon.ico')
 def favicon():
     return send_from_directory(os.path.join(app.root_path, 'static'),
                                'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
+@app.route('/default')
+def default_jsonencoder():
+  now = str(datetime.now())
+  return json.dumps({'now': now})
 
 # Route for Project Page 
 @app.route('/<project>/')
@@ -288,35 +306,47 @@ def projectMain(project):
 #JSON APIs to view Project Information
 @app.route('/<project>/<projectcategory>/JSON')
 def projectCategoryJSON(project,projectcategory):
-  # print "i m JSON",project, projectcategory, type(str(projectcategory))
-  project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()  
+  project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
   print project_list
-  return jsonify(project_list=[i.serialize for i in project_list])
+  # return json.dumps(i.serialize for i in project_list)
+  return jsonify(Projects=[i.serialize for i in project_list])
+
+#XML APIs to view Project Information
+@app.route('/<project>/<projectcategory>/XML')
+def projectCategoryJSON(project,projectcategory):
+  import xml.etree.ElementTree as ET
+  project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
+  print project_list
+  root = ET.element(project_list)
+  # return json.dumps(i.serialize for i in project_list)
+  return app.response_class(ET.dump(root), mimetype='application/xml')
+  # return jsonify(Projects=[i.serialize for i in project_list])
 
 # Route for Project Category Page
 @app.route('/<project>/<projectcategory>/')
 def projectCategory(project,projectcategory):
-  print "Inside projectCategory"
+  
   project_query = session.query(Project).filter_by(projectname_id = project, projectcategory_id=projectcategory).all();
-
+  
   return render_template('projectcategory.html',project_name = projects,project=str(project),
-    projectcategory=str(projectcategory),project_list=project_query)  
+		projectcategory=str(projectcategory),project_list=project_query) 	
 
 # Route for displaying project
 @app.route('/<project>/<projectcategory>/<int:project_no>/')       
 def showProject(project,projectcategory,project_no):
   project_no_query = session.query(Project).filter_by(project_item_id = project_no).one();
   creator = getUserInfo(project_no_query.author_id)
+  author_name = getUserName(project_no_query.author_id)
   
   if 'username' not in login_session:
     return redirect('/login')
 
   if 'username' not in login_session or creator.id != login_session['user_id']:
     return render_template('public_single_project.html',project=project,projectcategory=projectcategory,project_no=project_no,
-      project_list=project_no_query)
+      project_list=project_no_query, author_name=author_name)
   else:
     return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
-      project_list=project_no_query)
+      project_list=project_no_query, author_name=author_name)
 
 # Route for editing project
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
@@ -347,7 +377,7 @@ def deleteProject(project,projectcategory,project_no):
 # Check to see if user in logged in or not
   if 'username' not in login_session:
     return redirect('/login')
-  
+	
   # Alert user if they are authorized to delete the project
   if projectToDelete.author_id != login_session['user_id']:
     return "<script>function myFunction() {alert('You are not authorized to project this project. Please create your own project in order to delete.');}</script><body onload='myFunction()''>"
@@ -394,6 +424,11 @@ def getUserID(email):
 def getUserInfo(user_id):
     user = session.query(User).filter_by(id = user_id).one()
     return user
+
+# Function to query user id
+def getUserName(user_id):
+    user = session.query(User).filter_by(id = user_id).one()
+    return user.name
 
 # Function to Create New User into database
 def createUser(login_session):
