@@ -1,0 +1,90 @@
+{% extends "index.html" %}
+
+<!-- This is the title section -->
+{% block head %}
+  <title>{% block title %}{% endblock %} Project Portfolio </title>
+{% endblock %}
+
+{% block categoryContent %} 
+<h1>{{ project|upper }}</h1>
+<p><a href="{{ url_for('newProject',project=project, projectcategory=projectcategory) }}"><button type="button">Create New Project</button></a></p>
+
+{% for project in project_list %} 
+  
+  {% if project.projectname_id == 'frontend' %}
+    {% if project.projectcategory_id == 'p1' %}
+      <p><h4>PROJECT P1: Build a Portfolio Site</h4></p>
+      
+      
+    {% elif project.projectcategory_id == 'p2' %}
+      <h4>PROJECT P2: Interactive Resume</h4>
+
+    {% elif project.projectcategory_id == 'p3' %}
+      <h4>PROJECT P3: Classic Arcade Game Clone</h4>
+
+    {% elif project.projectcategory_id == 'p4' %}
+      <h4>PROJECT P4: Website Optimization</h4>
+
+    {% elif project.projectcategory_id == 'p5' %}
+      <h4>PROJECT P5: Neighborhood Map</h4>
+
+    {% elif project.projectcategory_id == 'p6' %}
+      <h4>PROJECT P6: Feed Reader Testing</h4>
+
+    {% elif project.projectcategory_id == 'p7' %}
+      <h4>Additional Projects</h4>
+
+    {% endif %}
+
+  {% elif project.projectname_id == 'fullstack' %}
+    {% if project.projectcategory_id == 'p1' %}
+      <p><h4>PROJECT P1: Movie Trailer Website</h4></p>
+
+    {% elif project.projectcategory_id == 'p2' %}
+      <h4>PROJECT P2: Tournament Results</h4>
+
+    {% elif project.projectcategory_id == 'p3' %}
+      <h4>PROJECT P3: Item Catalog</h4>
+
+    {% elif project.projectcategory_id == 'p4' %}
+      <h4>PROJECT P4: Conference Organization App</h4>
+
+    {% elif project.projectcategory_id == 'p5' %}
+      <h4>PROJECT P5: Linux Server Configuration</h4>
+
+    {% endif %}
+
+  {% elif project.projectname_id == 'ios' %}
+    {% if project.projectcategory_id == 'p1' %}
+      <h4>PROJECT P1: Pitch Perfect</h4>
+
+    {% elif project.projectcategory_id == 'p2' %}
+      <h4>PROJECT P2: MemeMe</h4>
+
+    {% elif project.projectcategory_id == 'p3' %}
+      <h4>PROJECT P3: On the Map</h4>
+
+    {% elif project.projectcategory_id == 'p4' %}
+      <h4>PROJECT P4: Virtual Tourist</h4>
+
+    {% elif project.projectcategory_id == 'p5' %}
+      <h4>PROJECT P5: Additional Projects</h4>
+
+    {% endif %}
+
+  {% elif project.projectname_id == 'android' %}
+    <h4>Android Projects: </h4>
+
+  {% elif project.projectname_id == 'other' %}
+    <h4>Additional Projects: </h4>
+      
+  {% endif %}
+  </br></br>
+  <p><b>Project URL</b>: <a href="{{ url_for('showProject',project=project.projectname_id,projectcategory=project.projectcategory_id,project_no=project.project_item_id)}}">{{ project.project_url }}</a></p>
+  <p><b>Author:</b>{{ project.author_id}}</p>
+  <p><b>Description:</b>{{ project.project_description }}</p></br></br>
+  
+  
+{% endfor %}
+
+{% endblock %}

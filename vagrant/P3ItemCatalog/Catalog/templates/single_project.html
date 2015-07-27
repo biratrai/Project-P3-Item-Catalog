@@ -1,0 +1,22 @@
+{% extends "index.html" %}
+{% block title %}Udacity{% endblock %}
+{% block head %}
+  {{ super() }}
+  <style type="text/css">
+    .important { color: #336699; }
+  </style>
+{% endblock %}
+
+{% block categoryContent %}
+  
+  <h1>{{ project }}</h1></br>
+  <a href="{{ url_for('editProject',project=project, projectcategory=projectcategory, project_no=project_no) }}"><button type="button">Edit Project</button></a>
+  <a href="{{ url_for('deleteProject',project=project, projectcategory=projectcategory, project_no=project_no) }}"><button type="button">Delete Project</button></a></br></br>
+  
+  <p><b>Project URL: </b><a href="project_list.project_url">{{ project_list.project_url }}</a></p>
+  <p><b>Project Description: </b>{{ project_list.project_description}}</p>
+  <p><b>Author: </b>{{ author_name }}</p>
+  <p><b>Comments: </b>Comments</p>
+
+{% endblock %}
+
