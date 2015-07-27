@@ -12,8 +12,8 @@ DROP DATABASE tournament;
 -- Create Database 'Tournament'
 CREATE DATABASE tournament;
 
---DROP TABLE IF EXISTS players CASCADE; -- Drop table players if exists
---DROP TABLE IF EXISTS scores CASCADE;  -- Drop tbale scores if exists
+DROP TABLE IF EXISTS players CASCADE; -- Drop table players if exists
+DROP TABLE IF EXISTS scores CASCADE;  -- Drop tbale scores if exists
 
 -- Creating Connection to the database
 \connect tournament
@@ -21,7 +21,7 @@ CREATE DATABASE tournament;
 -- Create Player Table
 CREATE TABLE players(
    player_id smallserial PRIMARY KEY, -- Declaring a self incrementing unique id 
-   player_name varchar(255) NOT NULL  -- Declaring varchar which must not be null
+   player_name Text NOT NULL  -- Declaring varchar which must not be null
    
 );
 
