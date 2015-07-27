@@ -1,9 +1,5 @@
 
-rdb-fullstack
-=============
 
-Common code for the Relational Databases and Full Stack Fundamentals courses
-=======
 # Project-P3-Item-Catalog
 This is the third project of the Full Stack Nano Degree from Udacity
 
