@@ -21,7 +21,16 @@ from flask import make_response
 import requests
 
 # Imports for XML EndPoints
-import xml.etree.ElementTree as ET
+from xml.etree import ElementTree
+from xml.dom import minidom
+# from xml.etree.ElementTree import Element, SubElement
+from xml.etree.ElementTree import Element, SubElement, Comment, tostring
+# from lxml import etree
+from flask import Response
+
+from xml_helper import create_xml
+
+
 
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
@@ -314,13 +323,8 @@ def projectCategoryJSON(project,projectcategory):
 #XML APIs to view Project Information
 @app.route('/<project>/<projectcategory>/XML')
 def projectCategoryJSON(project,projectcategory):
-  import xml.etree.ElementTree as ET
   project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
-  print project_list
-  root = ET.element(project_list)
-  # return json.dumps(i.serialize for i in project_list)
-  return app.response_class(ET.dump(root), mimetype='application/xml')
-  # return jsonify(Projects=[i.serialize for i in project_list])
+  return Response(create_xml(project,projectcategory,project_list), mimetype='application/xml')
 
 # Route for Project Category Page
 @app.route('/<project>/<projectcategory>/')
