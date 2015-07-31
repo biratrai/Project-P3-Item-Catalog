@@ -1,3 +1,4 @@
+# Imports for Flask
 from flask import Flask,render_template, url_for, redirect, flash, request, jsonify 
 from Catalog import app
 from datetime import datetime
@@ -7,7 +8,7 @@ from sqlalchemy import create_engine, asc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, User, Project, Comments
 
-#IMPORTS FOR USING OAUTH
+#Imports for using OAuth
 from flask import session as login_session
 import random, string
 import os
@@ -21,15 +22,13 @@ from flask import make_response
 import requests
 
 # Imports for XML EndPoints
-from xml.etree import ElementTree
-from xml.dom import minidom
-# from xml.etree.ElementTree import Element, SubElement
-from xml.etree.ElementTree import Element, SubElement, Comment, tostring
-# from lxml import etree
-from flask import Response
-
 from xml_helper import create_xml
 
+# Imports for File Uploads
+# from werkzeug import secure_filename
+# UPLOAD_FOLDER = '/images/'
+# ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+from flask import send_from_directory
 
 
 CLIENT_ID = json.loads(
@@ -53,7 +52,34 @@ projects = ["Project1","Project2","Project3","Project4","Project5"]
 projects_description  = {"Project1":"This is the project one","Project2":"This is the prject 2","Project3":"This is project 3",
 			"Project4": "This is project 4","Project5":"This is the project 5"}
 
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
 
+@app.route('/uploaded', methods=['GET', 'POST'])
+def upload_file():
+    if request.method == 'POST':
+        file = request.files['file']
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+            return redirect(url_for('uploaded_file',
+                                    filename=filename))
+    return '''
+    <!doctype html>
+    <title>Upload new File</title>
+    <h1>Upload new File</h1>
+    <form action="" method=post enctype=multipart/form-data>
+      <p><input type=file name=file>
+         <input type=submit value=Upload>
+    </form>
+    '''
+
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+    # return send_from_directory(app.config['UPLOAD_FOLDER'],
+    #                            filename)
+    return render_template("uploads.html",title='Home')
 #Create anti-forgery state token
 @app.route('/login')
 def showLogin():
@@ -309,6 +335,8 @@ def projectMain(project):
     project_category = project_android
   elif((str(project)) == 'others'):
     project_category = project_other
+  else:
+    return "Wrong path"
   
   return render_template('project.html',project_category = project_category,project=str(project))  
 
@@ -316,8 +344,6 @@ def projectMain(project):
 @app.route('/<project>/<projectcategory>/JSON')
 def projectCategoryJSON(project,projectcategory):
   project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
-  print project_list
-  # return json.dumps(i.serialize for i in project_list)
   return jsonify(Projects=[i.serialize for i in project_list])
 
 #XML APIs to view Project Information
