@@ -4,6 +4,7 @@
 {% endblock %}
 
 {% block categoryContent %} 
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
 	<div class="row divider green">
 		<div class="col-md-12"></div>
 	</div>
@@ -14,18 +15,20 @@
 	</div>
 	<div class="row">
 		<div class="col-md-6 col-md-offset-1 padding-top">
-			<form action="#" method = "post">
+			<form action="#" method = "post" id="textForm" enctype="multipart/form-data">
 				<div class="form-group">
 				<label for="name">Project Url:</label>
 				<input type ="text" class="form-control" maxlength="100" name="url" placeholder="Link to the project">
 				
 				<label for="description">Project Description:</label>
 				<textarea class="form-control" maxlength="250" rows="3" name="description" placeholder="Description of the course"></textarea>
-				
-				<button type="submit" class="btn btn-default" id="submit" type="submit">
-				<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Create</button>
+
+				<label for="project_picture">Upload project picture</label>
+			    <input type="file" name="file" ><br /><br />
+		    	
+				<button type="submit" class="btn btn-default" id="submitButton" >
+				<span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Create</button>		
 				</div>
-			</form>
 		</div>
 	</div>
 {% endblock %}	

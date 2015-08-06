@@ -23,12 +23,19 @@ import requests
 
 # Imports for XML EndPoints
 from xml_helper import create_xml
+from flask import Response
 
 # Imports for File Uploads
-# from werkzeug import secure_filename
-# UPLOAD_FOLDER = '/images/'
-# ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+from werkzeug import secure_filename
 from flask import send_from_directory
+UPLOAD_FOLDER = 'Catalog/images/'
+
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','JPG'])
+# This is the path to the upload directory
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+# These are the extension that we are accepting to be uploaded
+app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','JPG'])
 
 
 CLIENT_ID = json.loads(
@@ -52,34 +59,6 @@ projects = ["Project1","Project2","Project3","Project4","Project5"]
 projects_description  = {"Project1":"This is the project one","Project2":"This is the prject 2","Project3":"This is project 3",
 			"Project4": "This is project 4","Project5":"This is the project 5"}
 
-def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
-
-@app.route('/uploaded', methods=['GET', 'POST'])
-def upload_file():
-    if request.method == 'POST':
-        file = request.files['file']
-        if file and allowed_file(file.filename):
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            return redirect(url_for('uploaded_file',
-                                    filename=filename))
-    return '''
-    <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
-    <form action="" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
-    </form>
-    '''
-
-@app.route('/uploads/<filename>')
-def uploaded_file(filename):
-    # return send_from_directory(app.config['UPLOAD_FOLDER'],
-    #                            filename)
-    return render_template("uploads.html",title='Home')
 #Create anti-forgery state token
 @app.route('/login')
 def showLogin():
@@ -420,22 +399,43 @@ def deleteProject(project,projectcategory,project_no):
   else:
     return render_template('delete_project.html',project = project,projectcategory=projectcategory,project_no=project_no)
 
+# Function to check for the allowed extensions for uploading files
+def allowed_file(filename):
+  return '.' in filename and \
+    filename.rsplit('.', 1)[1] in ALLOWED_EXTENSIONS
+
 # Route for creating new Project
 @app.route('/<project>/<projectcategory>/new', methods=['GET','POST'])
 def newProject(project,projectcategory):
-  print "Inside newProject"
+
+  # Check to see if user in logged in or not
   if 'username' not in login_session:
     return redirect('/login')
 
   # Handle the POST request  
   if request.method == 'POST':
-    print "Inside POST"
+    # Get the name of the uploaded file
+    file = request.files['file']
+    print file.filename
+
+    # Check if the file is one of the allowed types/extensions
+    if file and allowed_file(file.filename):
+      # Make the filename safe, remove unsupported chars
+      filename = secure_filename(file.filename)
+      print type(file)
+
+      # Move the file form the temporal folder to the upload folder we setup
+      file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+
+    # Save data into database  
     newProject = Project(project_url = request.form['url'],
       author_id=login_session['user_id'],
       project_description= request.form['description'],
       projectname_id=project,
       projectcategory_id=projectcategory)
     session.add(newProject)
+
+    # Show flash message about succesfull creation of project
     flash('New Project %s Successfully Created' % newProject.project_url)
     session.commit()
     return redirect(url_for('projectCategory',project=project,projectcategory=projectcategory))
