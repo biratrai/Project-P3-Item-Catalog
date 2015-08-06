@@ -2,19 +2,15 @@
 from xml.etree import ElementTree
 from xml.dom import minidom
 from xml.etree.ElementTree import Element, SubElement, Comment, tostring
-from flask import Response
 
 def create_xml(project,projectcategory,project_list):
+
+	# Parent Top Element
 	top = Element("PROJECTS")
-	comment = Comment('Generated for PyMOTW')
+	comment = Comment('Generated for FullStack ND Project Catalog')
 	top.append(comment)
 
-	# print project,projectcategory, project_list
-	for i in project_list:
-		print i.project_url
-		print i.project_description
-		print i.createdTime
-
+	# First Child Element
 	child = SubElement(top, project)
 
 
@@ -22,20 +18,17 @@ def create_xml(project,projectcategory,project_list):
 	child_with_tail.text = projectcategory
 
 	for i in project_list:
-		print i.project_url
-		print i.project_description
-		print i.createdTime
-
-		child_with_tail2 = SubElement(child,'url')
+		# Child's Child Element
+		child_with_tail2 = SubElement(child_with_tail,'url')
 		child_with_tail2.text = i.project_url
 
-		child_with_tail2 = SubElement(child,'description')
-		child_with_tail2.text = i.project_description
+		child_with_tail2 = SubElement(child_with_tail,'description')
+		child_with_tail2.text = "i.project_description"
 
-		child_with_tail2 = SubElement(child,'author')
+		child_with_tail2 = SubElement(child_with_tail,'author')
 		child_with_tail2.text = "santi"
 
-		child_with_tail2 = SubElement(child,'date_create')
+		child_with_tail2 = SubElement(child_with_tail,'date_create')
 		child_with_tail2.text = str(i.createdTime)
 
 	return prettify(top)
