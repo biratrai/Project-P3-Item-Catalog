@@ -19,5 +19,10 @@ This project was developed under the [**Full-Stack-Developer Nano Degree Program
 **Getting the JSON API**
 -----------------------------------------------------------
 1. The general API end point is : http://localhost:8000/fullstack/p1/JSON
-2. You can change the project name to fullstack/frontend/android/ios/others and project number to p1-p6 if it exists.
->>>>>>> 1def38ad4d52579e7838d783919d5614b5c49abe
+2. You can change the project name to fullstack/frontend/android/ios/others and project number to p1-p6 if it exists
+
+**Getting the XML API**
+-----------------------------------------------------------
+1. The general API end point is : http://localhost:8000/fullstack/p1/XML
+2. You can change the project name to fullstack/frontend/android/ios/others and project number to p1-p6 if it exists
+
