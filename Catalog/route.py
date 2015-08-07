@@ -303,7 +303,7 @@ def default_jsonencoder():
 # Route for Project Page 
 @app.route('/<project>/')
 def projectMain(project):
-  print "Inside Project Main"
+  # print "Inside Project Main"
   if((str(project)) == 'fullstack'):
     project_category = project_fullstack
   elif((str(project)) == 'frontend'):
