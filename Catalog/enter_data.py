@@ -209,9 +209,9 @@ projectitem21 = Project(project_url="android_url",
 session.add(projectitem21)
 session.commit()
 
-projectitem22 = Project(project_url="other_url",
-	project_description="This is the fifth project relating to the other category",
-	projectname_id="other",
+projectitem22 = Project(project_url="android_url",
+	project_description="This is the sixth project relating to the other category",
+	projectname_id="android",
 	projectcategory_id="p1",
 	author_id=5)
 session.add(projectitem22)
@@ -249,8 +249,108 @@ projectitem26 = Project(project_url="other_url",
 session.add(projectitem26)
 session.commit()
 
+comments1 = Comments(content="This first project of FEND is awesome!",author_id=1,project_id=1)
+session.add(comments1)
+session.commit()
 
+comments2 = Comments(content="This second project of FEND is awesome!",author_id=2,project_id=2)
+session.add(comments1)
+session.commit()
 
+comments3 = Comments(content="This third project of FEND is awesome!",author_id=3,project_id=3)
+session.add(comments3)
+session.commit()
 
+comments4 = Comments(content="This fourth project of FEND is awesome!",author_id=4,project_id=4)
+session.add(comments4)
+session.commit()
+
+comments5 = Comments(content="This fifth project of FEND is awesome!",author_id=5,project_id=5)
+session.add(comments5)
+session.commit()
+
+comments6 = Comments(content="This sixth project of FEND is awesome!",author_id=5,project_id=6)
+session.add(comments6)
+session.commit()
+
+comments7 = Comments(content="This first project of FSND is awesome!",author_id=1,project_id=7)
+session.add(comments7)
+session.commit()
+
+comments8 = Comments(content="This second project of FSND is awesome!",author_id=2,project_id=8)
+session.add(comments8)
+session.commit()
+
+comments9 = Comments(content="This third project of FSND is awesome!",author_id=3,project_id=9)
+session.add(comments9)
+session.commit()
+
+comments10 = Comments(content="This fourth project of FSND is awesome!",author_id=4,project_id=10)
+session.add(comments10)
+session.commit()
+
+comments11 = Comments(content="This fifth project of FSND is awesome!",author_id=5,project_id=11)
+session.add(comments11)
+session.commit()
+
+comments12 = Comments(content="This first project of iosND is awesome!",author_id=1,project_id=12)
+session.add(comments12)
+session.commit()
+
+comments13 = Comments(content="This second project of iosND is awesome!",author_id=2,project_id=13)
+session.add(comments13)
+session.commit()
+
+comments14 = Comments(content="This third project of iosND is awesome!",author_id=3,project_id=14)
+session.add(comments14)
+session.commit()
+
+comments15 = Comments(content="This fourth project of iosND is awesome!",author_id=4,project_id=15)
+session.add(comments15)
+session.commit()
+
+comments16 = Comments(content="This fifth project of iosND is awesome!",author_id=5,project_id=16)
+session.add(comments16)
+session.commit()
+
+comments17 = Comments(content="This first project of androidND is awesome!",author_id=1,project_id=17)
+session.add(comments17)
+session.commit()
+
+comments18 = Comments(content="This second project of androidND is awesome!",author_id=2,project_id=18)
+session.add(comments18)
+session.commit()
+
+comments19 = Comments(content="This third project of androidND is awesome!",author_id=3,project_id=19)
+session.add(comments19)
+session.commit()
+
+comments20 = Comments(content="This fourth project of androidND is awesome!",author_id=4,project_id=20)
+session.add(comments20)
+session.commit()
+
+comments21 = Comments(content="This fifth project of androidND is awesome!",author_id=5,project_id=21)
+session.add(comments21)
+session.commit()
+
+comments22 = Comments(content="This sixth project of androidND is awesome!",author_id=1,project_id=22)
+session.add(comments22)
+session.commit()
+
+comments23 = Comments(content="This first project of Other is awesome!",author_id=2,project_id=23)
+session.add(comments23)
+session.commit()
+
+comments24 = Comments(content="This second project of Other is awesome!",author_id=3,project_id=24)
+session.add(comments24)
+session.commit()
+
+comments25 = Comments(content="This third project of Other is awesome!",author_id=4,project_id=25)
+session.add(comments25)
+session.commit()
+
+comments26 = Comments(content="This fourth project of Other is awesome!",author_id=5,project_id=26)
+session.add(comments26)
+session.commit()
 
 print "added all items!"
