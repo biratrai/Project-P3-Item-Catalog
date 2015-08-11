@@ -37,7 +37,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 # These are the extension that we are accepting to be uploaded
 app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','JPG'])
 
-
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME= "Restaurant Menu Application"
@@ -303,7 +302,6 @@ def default_jsonencoder():
 # Route for Project Page 
 @app.route('/<project>/')
 def projectMain(project):
-  # print "Inside Project Main"
   if((str(project)) == 'fullstack'):
     project_category = project_fullstack
   elif((str(project)) == 'frontend'):
@@ -341,21 +339,32 @@ def projectCategory(project,projectcategory):
 		projectcategory=str(projectcategory),project_list=project_query) 	
 
 # Route for displaying project
-@app.route('/<project>/<projectcategory>/<int:project_no>/')       
+@app.route('/<project>/<projectcategory>/<int:project_no>/',methods=['GET', 'POST'])       
 def showProject(project,projectcategory,project_no):
-  project_no_query = session.query(Project).filter_by(project_item_id = project_no).one();
+  project_no_query = session.query(Project).filter_by(project_item_id = project_no).one()
   creator = getUserInfo(project_no_query.author_id)
   author_name = getUserName(project_no_query.author_id)
   
+  project_comment_query = session.query(Comments,User).filter(Comments.author_id == User.id).\
+    filter(Comments.project_id == project_no).all()    
+  
+  # Check to see if user in logged in or not
   if 'username' not in login_session:
     return redirect('/login')
+  
+  # Handle the POST request  
+  if request.method == 'POST':
+    print request.form['comments']
+    newComment = Comments(content = request.form['comments'],author_id=login_session['user_id'],project_id=project_no)
+    session.add(newComment)
+    session.commit()
 
   if 'username' not in login_session or creator.id != login_session['user_id']:
     return render_template('public_single_project.html',project=project,projectcategory=projectcategory,project_no=project_no,
-      project_list=project_no_query, author_name=author_name)
+      project_list=project_no_query, author_name=author_name,project_comments = project_comment_query)
   else:
     return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
-      project_list=project_no_query, author_name=author_name)
+      project_list=project_no_query, author_name=author_name,project_comments = project_comment_query)
 
 # Route for editing project
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
@@ -383,7 +392,7 @@ def editProject(project,projectcategory,project_no):
 def deleteProject(project,projectcategory,project_no):
   projectToDelete = session.query(Project).filter_by(project_item_id = project_no).one()
 
-# Check to see if user in logged in or not
+  # Check to see if user in logged in or not
   if 'username' not in login_session:
     return redirect('/login')
 	
