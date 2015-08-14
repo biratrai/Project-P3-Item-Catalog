@@ -4,9 +4,7 @@ from Catalog import app
 from datetime import datetime
 
 # Imports for DB Session
-from sqlalchemy import create_engine, asc
-from sqlalchemy.orm import sessionmaker
-from database_setup import Base, User, Project, Comments
+import db_helper
 
 #Imports for using OAuth
 from flask import session as login_session
@@ -20,6 +18,7 @@ import httplib2
 import json
 from flask import make_response
 import requests
+import social_login_helper
 
 # Imports for XML EndPoints
 from xml_helper import create_xml
@@ -40,11 +39,6 @@ app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
 APPLICATION_NAME= "Restaurant Menu Application"
-
-engine = create_engine('sqlite:///Catalog/project.db')
-Base.metadata.bind = engine
-DBSession = sessionmaker(bind=engine)
-session = DBSession()
 
 # Project Variables
 project_name = ['FullStack','Frontend','ios','Android','Others']
@@ -67,196 +61,83 @@ def showLogin():
 
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
-
-#Validate state token 
-  if request.args.get('state') != login_session['state']:
-    response = make_response(json.dumps('Invalid state parameter.'), 401)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-
-#Obtain authorization code
-  code = request.data
-
-  try:
-    # Upgrade the authorization code into a credentials object
-    oauth_flow = flow_from_clientsecrets('Catalog/client_secrets.json', scope='')
-    oauth_flow.redirect_uri = 'postmessage'
-    credentials = oauth_flow.step2_exchange(code)
-
-# Throw the Error if the authorization code fails
-  except FlowExchangeError:
-    response = make_response(json.dumps('Failed to upgrade the authorization code.'), 401)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-
-# Check that the access token is valid.
-  access_token = credentials.access_token
-  url = ('https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=%s'% access_token)
-  h = httplib2.Http()
-  result = json.loads(h.request(url, 'GET')[1])
-
-# If there was an error in the access token info, abort.
-  if result.get('error') is not None:
-    response = make_response(json.dumps(result.get('error')), 500)
-    response.headers['Content-Type'] = 'application/json'
-
-# Verify that the access token is used for the intended user.
-  gplus_id = credentials.id_token['sub']
-  if result['user_id'] != gplus_id:
-    response = make_response(json.dumps("Token's user ID doesn't match given user ID."), 401)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-
-# Verify that the access token is valid for this app.
-  if result['issued_to'] != CLIENT_ID:
-    response = make_response(json.dumps("Token's client ID does not match app's."), 401)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-
-#Check to see if user is already logged in
-  stored_credentials = login_session.get('credentials')
-  stored_gplus_id = login_session.get('gplus_id')
-  if stored_credentials is not None and gplus_id == stored_gplus_id:
-    response = make_response(json.dumps('Current user is already connected.'),200)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-
-  # Store the access token in the session for later use.
-  login_session['credentials'] = credentials
-  login_session['gplus_id'] = gplus_id
-
-  #Get user info
-  userinfo_url =  "https://www.googleapis.com/oauth2/v1/userinfo"
-  params = {'access_token': credentials.access_token, 'alt':'json'}
-  answer = requests.get(userinfo_url, params=params)
-
-  data = answer.json()
-  login_session['provider'] = 'google'
-  login_session['username'] = data['name']
-  login_session['picture'] = data['picture']
-  login_session['email'] = data['email']
-
-  # see if user exists
-  user_id = getUserID(login_session['email'])
-  if not user_id:
-    user_id = createUser(login_session)
-  login_session['user_id'] = user_id
-  print login_session['user_id']
-
-  output = ''
-  output +='<h1>Welcome, '
-  output += login_session['username']
-  output += '!</h1>'
-  output += '<img src="'
-  output += login_session['picture']
-  output +=' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-  flash("You are now logged in as %s"%login_session['username'])
+  output = social_login_helper.google_connect(request,login_session)
   return output
 
 #Revoke current user's token and reset their login_session.
 @app.route("/gdisconnect")
 def gdisconnect():
-  
-  # Only disconnect a connected user.
-  credentials = login_session.get('credentials')
-  if credentials is None:
-    response = make_response(json.dumps('Current user not connected.'), 401)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-
-  # Execute HTTP GET request to revoke current token.
-  access_token = credentials.access_token
-  url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % access_token
-  h = httplib2.Http()
-  result = h.request(url, 'GET')[0]
-
-  if result['status'] == '200':
-    # Reset the user's session.
-    response = make_response(json.dumps('Successfully disconnected.'), 200)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-  else:
-    # For whatever reason, the given token was invalid.
-    response = make_response(
-        json.dumps('Failed to revoke token for given user.', 400))
-    response.headers['Content-Type'] = 'application/json'
-    return response
+  social_login_helper.google_disconnect(login_session)
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
-  if request.args.get('state') != login_session['state']:
-    response = make_response(json.dumps('Invalid state parameter.'), 401)
-    response.headers['Content-Type'] = 'application/json'
-    return response
-  access_token = request.data
+  output = social_login_helper.fb_connect(request,login_session)
+#   if request.args.get('state') != login_session['state']:
+#     response = make_response(json.dumps('Invalid state parameter.'), 401)
+#     response.headers['Content-Type'] = 'application/json'
+#     return response
+#   access_token = request.data
 
-  #Exchange client token for long-lived server-side token
-  # GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}&client_secret={app-secret}&fb_exchange_token={short-lived-token} 
-  app_id = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_id']
-  app_secret = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_secret']
-  url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
-  h = httplib2.Http()
-  result = h.request(url, 'GET')[1]
+#   #Exchange client token for long-lived server-side token
+#   # GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}&client_secret={app-secret}&fb_exchange_token={short-lived-token} 
+#   app_id = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_id']
+#   app_secret = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_secret']
+#   url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
+#   h = httplib2.Http()
+#   result = h.request(url, 'GET')[1]
 
-  #Use token to get user info from API 
-  userinfo_url =  "https://graph.facebook.com/v2.2/me"
+#   #Use token to get user info from API 
+#   userinfo_url =  "https://graph.facebook.com/v2.2/me"
 
-  #strip expire tag from access token
-  token = result.split("&")[0]
+#   #strip expire tag from access token
+#   token = result.split("&")[0]
 
-  url = 'https://graph.facebook.com/v2.2/me?%s' % token
-  h = httplib2.Http()
-  result = h.request(url, 'GET')[1]
-  print "result\n",result
+#   url = 'https://graph.facebook.com/v2.2/me?%s' % token
+#   h = httplib2.Http()
+#   result = h.request(url, 'GET')[1]
+#   print "result\n",result
 
-  data = json.loads(result)
-  print "\ndata\n",type(data),data
-  login_session['provider'] = 'facebook'
-  login_session['username'] = data["name"]
-  login_session['email'] = data["name"]+"@facebook.com"
-  login_session['facebook_id'] = data["id"]
+#   data = json.loads(result)
+#   print "\ndata\n",type(data),data
+#   login_session['provider'] = 'facebook'
+#   login_session['username'] = data["name"]
+#   login_session['email'] = data["name"]+"@facebook.com"
+#   login_session['facebook_id'] = data["id"]
 
-  # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
-  stored_token = token.split("=")[1]
-  login_session['access_token'] = stored_token
+#   # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
+#   stored_token = token.split("=")[1]
+#   login_session['access_token'] = stored_token
 
-  #Get user picture
-  url = 'https://graph.facebook.com/v2.2/me/picture?%s&redirect=0&height=200&width=200' % token
-  h = httplib2.Http()
-  result = h.request(url, 'GET')[1]
-  data = json.loads(result)
+#   #Get user picture
+#   url = 'https://graph.facebook.com/v2.2/me/picture?%s&redirect=0&height=200&width=200' % token
+#   h = httplib2.Http()
+#   result = h.request(url, 'GET')[1]
+#   data = json.loads(result)
 
-  login_session['picture'] = data["data"]["url"]
+#   login_session['picture'] = data["data"]["url"]
 	  
-	# see if user exists
-  user_id = getUserID(login_session['email'])
-  if not user_id:
-    user_id = createUser(login_session)
-  login_session['user_id'] = user_id
+# 	# see if user exists
+#   user_id = db_helper.getUserID(login_session['email'])
+#   if not user_id:
+#     user_id = db_helper.createUser(login_session)
+#   login_session['user_id'] = user_id
 
-  output = ''
-  output +='<h1>Welcome, '
-  output += login_session['username']
+#   output = ''
+#   output +='<h1>Welcome, '
+#   output += login_session['username']
 
-  output += '!</h1>'
-  output += '<img src="'
-  output += login_session['picture']
-  output +=' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+#   output += '!</h1>'
+#   output += '<img src="'
+#   output += login_session['picture']
+#   output +=' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
-  flash ("Now logged in as %s" % login_session['username'])
+#   flash ("Now logged in as %s" % login_session['username'])
   return output
 
 @app.route('/fbdisconnect')
 def fbdisconnect():
-  facebook_id = login_session['facebook_id']
-
-  # The access token must me included to successfully logout
-  access_token = login_session['access_token']
-  url = 'https://graph.facebook.com/%s/permissions' % (facebook_id,access_token)
-  h = httplib2.Http()
-  result = h.request(url, 'DELETE')[1]
-  return "you have been logged out"
-
+  output = social_login_helper.fb_disconnect(login_session)
+  return output
 
 @app.route('/disconnect')
 def disconnect():
@@ -332,44 +213,37 @@ def projectCategoryJSON(project,projectcategory):
 # Route for Project Category Page
 @app.route('/<project>/<projectcategory>/')
 def projectCategory(project,projectcategory):
-  
-  project_query = session.query(Project).filter_by(projectname_id = project, projectcategory_id=projectcategory).all();
+  list_of_projects = db_helper.project_list(project,projectcategory)
   
   return render_template('projectcategory.html',project_name = projects,project=str(project),
-		projectcategory=str(projectcategory),project_list=project_query) 	
+		projectcategory=str(projectcategory),project_list=list_of_projects) 	
 
 # Route for displaying project
 @app.route('/<project>/<projectcategory>/<int:project_no>/',methods=['GET', 'POST'])       
 def showProject(project,projectcategory,project_no):
-  project_no_query = session.query(Project).filter_by(project_item_id = project_no).one()
-  creator = getUserInfo(project_no_query.author_id)
-  author_name = getUserName(project_no_query.author_id)
-  
-  project_comment_query = session.query(Comments,User).filter(Comments.author_id == User.id).\
-    filter(Comments.project_id == project_no).all()    
-  
-  # Check to see if user in logged in or not
-  if 'username' not in login_session:
-    return redirect('/login')
+  list_of_single_project = db_helper.single_project(project_no)
+  creator = db_helper.getUserInfo(list_of_single_project.author_id)
+  author_name = db_helper.getUserName(list_of_single_project.author_id)
+     
+  list_of_comments = db_helper.comments_list(project_no)
   
   # Handle the POST request  
   if request.method == 'POST':
-    print request.form['comments']
-    newComment = Comments(content = request.form['comments'],author_id=login_session['user_id'],project_id=project_no)
-    session.add(newComment)
-    session.commit()
+    newComment = db_helper.new_comments(request.form['comments'],login_session['user_id'],project_no)
+    return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
+      project_list=list_of_single_project, author_name=author_name,project_comments = list_of_comments)
 
   if 'username' not in login_session or creator.id != login_session['user_id']:
     return render_template('public_single_project.html',project=project,projectcategory=projectcategory,project_no=project_no,
-      project_list=project_no_query, author_name=author_name,project_comments = project_comment_query)
+      project_list=list_of_single_project, author_name=author_name,project_comments = list_of_comments)
   else:
     return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
-      project_list=project_no_query, author_name=author_name,project_comments = project_comment_query)
+      project_list=list_of_single_project, author_name=author_name,project_comments = list_of_comments)
 
 # Route for editing project
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
 def editProject(project,projectcategory,project_no):
-  editedProject = session.query(Project).filter_by(project_item_id = project_no).one()
+  editedProject = db_helper.edit_project(project_no)
 
   if editedProject.author_id != login_session['user_id']:
     return "<script>function myFunction() {alert('You are not authorized to edit this project. Please create your own project in order to edit.');}</script><body onload='myFunction()''>"
@@ -390,7 +264,7 @@ def editProject(project,projectcategory,project_no):
 # Route for deleting project
 @app.route('/<project>/<projectcategory>/<int:project_no>/delete/',methods=['GET', 'POST'])
 def deleteProject(project,projectcategory,project_no):
-  projectToDelete = session.query(Project).filter_by(project_item_id = project_no).one()
+  projectToDelete = db_helper.delete_project(project_no)
 
   # Check to see if user in logged in or not
   if 'username' not in login_session:
@@ -437,12 +311,8 @@ def newProject(project,projectcategory):
       file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
     # Save data into database  
-    newProject = Project(project_url = request.form['url'],
-      author_id=login_session['user_id'],
-      project_description= request.form['description'],
-      projectname_id=project,
-      projectcategory_id=projectcategory)
-    session.add(newProject)
+    newProject = db_helper.new_project(request.form['url'],
+      login_session['user_id'],request.form['description'],project,projectcategory)
 
     # Show flash message about succesfull creation of project
     flash('New Project %s Successfully Created' % newProject.project_url)
@@ -450,29 +320,3 @@ def newProject(project,projectcategory):
     return redirect(url_for('projectCategory',project=project,projectcategory=projectcategory))
   else:
     return render_template('new_project.html',project = project,projectcategory=projectcategory)
-
-# Function to query user email
-def getUserID(email):
-    try:
-        user = session.query(User).filter_by(email = email).one()
-        return user.id
-    except:
-        return None
-
-# Function to query user id
-def getUserInfo(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
-    return user
-
-# Function to query user id
-def getUserName(user_id):
-    user = session.query(User).filter_by(id = user_id).one()
-    return user.name
-
-# Function to Create New User into database
-def createUser(login_session):
-    newUser = User(name = login_session['username'], email = login_session['email'])
-    session.add(newUser)
-    session.commit()
-    user = session.query(User).filter_by(email = login_session['email']).one()
-    return user.id   
