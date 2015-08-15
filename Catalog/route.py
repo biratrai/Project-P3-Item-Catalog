@@ -225,7 +225,7 @@ def showProject(project,projectcategory,project_no):
   creator = db_helper.getUserInfo(list_of_single_project.author_id)
   author_name = db_helper.getUserName(list_of_single_project.author_id)
      
-  list_of_comments = db_helper.comments_list(project_no)
+  list_of_comments = db_helper.comments_list(project_no)     
   
   # Handle the POST request  
   if request.method == 'POST':
