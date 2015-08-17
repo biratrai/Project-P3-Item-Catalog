@@ -26,7 +26,7 @@ class Project(Base):
     project_item_id = Column(Integer,primary_key = True)
     project_url = Column(String(250), nullable = False)
     project_description = Column(String(250))
-    image_url = Column(String(250))
+    image_url = Column(String(250),default="/static/placeholder_image.jpg")
     createdTime = Column(DATETIME,default=func.current_timestamp())
     author_id = Column(Integer,ForeignKey('users.id'))
     projectname_id = Column(String(64),nullable = False)
