@@ -26,6 +26,7 @@ class Project(Base):
     project_item_id = Column(Integer,primary_key = True)
     project_url = Column(String(250), nullable = False)
     project_description = Column(String(250))
+    image_url = Column(String(250))
     createdTime = Column(DATETIME,default=func.current_timestamp())
     author_id = Column(Integer,ForeignKey('users.id'))
     projectname_id = Column(String(64),nullable = False)
@@ -64,7 +65,7 @@ class Comments(Base):
             'content'   : self.content,
             'author'    : self.author_id,
             'projectid' : self.project_id,
-            'created'   : self.createdTime,
+            'created'   : str(self.createdTime),
         }
       
 # create_engine function let's us know which database to communicate to
