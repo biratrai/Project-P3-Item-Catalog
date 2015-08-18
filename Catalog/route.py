@@ -27,7 +27,7 @@ from flask import Response
 # Imports for File Uploads
 from werkzeug import secure_filename
 from flask import send_from_directory
-UPLOAD_FOLDER = 'Catalog/images/'
+UPLOAD_FOLDER = 'Catalog/static/'
 
 ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','JPG'])
 # This is the path to the upload directory
@@ -41,7 +41,6 @@ CLIENT_ID = json.loads(
 APPLICATION_NAME= "Restaurant Menu Application"
 
 # Project Variables
-project_name = ['FullStack','Frontend','ios','Android','Others']
 project_fullstack = ['Movie Trailer Website','Tournament Results','Item Catalog','Conference Organization App','Linux Server Configuration']
 project_frontend = ['PROJECT P1: Build a Portfolio Site','PROJECT P2: Interactive Resume','PROJECT P3: Classic Arcade Game Clone',
 	'PROJECT P4: Website Optimization','PROJECT P5: Neighborhood Map','PROJECT P6: Feed Reader Testing','Additional Projects']
@@ -49,8 +48,6 @@ project_ios = ['PROJECT P1: Pitch Perfect','PROJECT P2: MemeMe','PROJECT P3: On 
 project_android = ['P1', 'P2']	
 project_other = ['O1', 'O2']
 projects = ["Project1","Project2","Project3","Project4","Project5"]	
-projects_description  = {"Project1":"This is the project one","Project2":"This is the prject 2","Project3":"This is project 3",
-			"Project4": "This is project 4","Project5":"This is the project 5"}
 
 #Create anti-forgery state token
 @app.route('/login')
@@ -72,66 +69,6 @@ def gdisconnect():
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
   output = social_login_helper.fb_connect(request,login_session)
-#   if request.args.get('state') != login_session['state']:
-#     response = make_response(json.dumps('Invalid state parameter.'), 401)
-#     response.headers['Content-Type'] = 'application/json'
-#     return response
-#   access_token = request.data
-
-#   #Exchange client token for long-lived server-side token
-#   # GET /oauth/access_token?grant_type=fb_exchange_token&client_id={app-id}&client_secret={app-secret}&fb_exchange_token={short-lived-token} 
-#   app_id = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_id']
-#   app_secret = json.loads(open('Catalog/fb_client_secrets.json', 'r').read())['web']['app_secret']
-#   url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (app_id,app_secret,access_token)
-#   h = httplib2.Http()
-#   result = h.request(url, 'GET')[1]
-
-#   #Use token to get user info from API 
-#   userinfo_url =  "https://graph.facebook.com/v2.2/me"
-
-#   #strip expire tag from access token
-#   token = result.split("&")[0]
-
-#   url = 'https://graph.facebook.com/v2.2/me?%s' % token
-#   h = httplib2.Http()
-#   result = h.request(url, 'GET')[1]
-#   print "result\n",result
-
-#   data = json.loads(result)
-#   print "\ndata\n",type(data),data
-#   login_session['provider'] = 'facebook'
-#   login_session['username'] = data["name"]
-#   login_session['email'] = data["name"]+"@facebook.com"
-#   login_session['facebook_id'] = data["id"]
-
-#   # The token must be stored in the login_session in order to properly logout, let's strip out the information before the equals sign in our token
-#   stored_token = token.split("=")[1]
-#   login_session['access_token'] = stored_token
-
-#   #Get user picture
-#   url = 'https://graph.facebook.com/v2.2/me/picture?%s&redirect=0&height=200&width=200' % token
-#   h = httplib2.Http()
-#   result = h.request(url, 'GET')[1]
-#   data = json.loads(result)
-
-#   login_session['picture'] = data["data"]["url"]
-	  
-# 	# see if user exists
-#   user_id = db_helper.getUserID(login_session['email'])
-#   if not user_id:
-#     user_id = db_helper.createUser(login_session)
-#   login_session['user_id'] = user_id
-
-#   output = ''
-#   output +='<h1>Welcome, '
-#   output += login_session['username']
-
-#   output += '!</h1>'
-#   output += '<img src="'
-#   output += login_session['picture']
-#   output +=' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
-
-#   flash ("Now logged in as %s" % login_session['username'])
   return output
 
 @app.route('/fbdisconnect')
@@ -225,7 +162,7 @@ def showProject(project,projectcategory,project_no):
   creator = db_helper.getUserInfo(list_of_single_project.author_id)
   author_name = db_helper.getUserName(list_of_single_project.author_id)
      
-  list_of_comments = db_helper.comments_list(project_no)     
+  list_of_comments = db_helper.comments_list(project_no)  
   
   # Handle the POST request  
   if request.method == 'POST':
@@ -239,6 +176,10 @@ def showProject(project,projectcategory,project_no):
   else:
     return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
       project_list=list_of_single_project, author_name=author_name,project_comments = list_of_comments)
+
+# @app.route('/<path:filename>')  
+def send_file(filename):  
+    return send_from_directory(app.static_folder, filename)
 
 # Route for editing project
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
@@ -299,24 +240,27 @@ def newProject(project,projectcategory):
   if request.method == 'POST':
     # Get the name of the uploaded file
     file = request.files['file']
-    print file.filename
 
     # Check if the file is one of the allowed types/extensions
     if file and allowed_file(file.filename):
       # Make the filename safe, remove unsupported chars
       filename = secure_filename(file.filename)
-      print type(file)
 
       # Move the file form the temporal folder to the upload folder we setup
       file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+      image_url = url_for('static',filename=file.filename)
+      
     # Save data into database  
     newProject = db_helper.new_project(request.form['url'],
-      login_session['user_id'],request.form['description'],project,projectcategory)
+      login_session['user_id'],request.form['description'],project,projectcategory,image_url)
+
+    # Create and Save new User into database
+    newUser = db_helper.new_user(login_session['username'],login_session['user_id'])
 
     # Show flash message about succesfull creation of project
     flash('New Project %s Successfully Created' % newProject.project_url)
-    session.commit()
+    # session.commit()
     return redirect(url_for('projectCategory',project=project,projectcategory=projectcategory))
   else:
     return render_template('new_project.html',project = project,projectcategory=projectcategory)

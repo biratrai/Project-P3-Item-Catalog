@@ -10,16 +10,20 @@
 {% block categoryContent %}
   
   <h1>{{ project }}</h1></br></br>
-  <a href="#">Project url</a></br>
-  <p>Project Description</p>
-  <p>{{ projectcategory }}</p>
-  <p>Comments</p>
+  <img src={{ project_list.image_url }} alt="Project Image" style="width:304px;height:228px;">
+  <p><b>Project URL: </b><a href="project_list.project_url">{{ project_list.project_url }}</a></p>
+  <p><b>Project Description: </b>{{ project_list.project_description}}</p>
+  <p><b>Author: </b>{{ author_name }}</p>
+  <label for="description">Comments:</label>
+  {% for comments in project_comments %}
+        <p><b>{{  comments[1].name }}: </b>{{  comments[0].content }}</p>
+  {% endfor %}
+  <form action="#" method = "post" id="textComments">
+    <textarea class="form-control" maxlength="250" rows="3" name="comments" placeholder="Please post comments"></textarea>
 
-  <p>{{ project_no }}</p>
-
-
-
-
+    <button type="submit" class="btn btn-default" id="submitButton" >
+    <span class="glyphicon glyphicon-comment" aria-hidden="true"></span> Comment</button>   
+  </form>
 
 {% endblock %}
 
