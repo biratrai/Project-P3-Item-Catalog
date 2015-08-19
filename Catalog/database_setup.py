@@ -29,8 +29,8 @@ class Project(Base):
     image_url = Column(String(250),default="/static/placeholder_image.jpg")
     createdTime = Column(DATETIME,default=func.current_timestamp())
     author_id = Column(Integer,ForeignKey('users.id'))
-    projectname_id = Column(String(64),nullable = False)
-    projectcategory_id =Column(String(64),nullable = False)
+    projectname_id = Column(Integer,nullable = False, unique=True)
+    projectcategory_id =Column(Integer,nullable = False, unique=True)
     user = relationship(User,cascade = 'delete')
 
     @property
