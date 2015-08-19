@@ -24,6 +24,9 @@ import httplib2
 import json
 from flask import make_response
 
+# SeaSurf is a Flask Extension for preventing cross-site request forgery
+from flask.ext.seasurf import SeaSurf
+
 # import requests
 import social_login_helper
 
@@ -43,6 +46,9 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # These are the extension that we are accepting to be uploaded
 app.config['ALLOWED_EXTENSIONS'] = set(['png', 'jpg', 'jpeg', 'gif', 'JPG'])
+
+# Protecting the app against CSRF attacks.
+csrf = SeaSurf(app)
 
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
