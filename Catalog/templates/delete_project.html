@@ -8,10 +8,9 @@
 	<p>project_url</p>
 	<p>Are you sure you want to delete?</p>
 	<form action="#" method = 'post'>
-
+		<input type="hidden" name="_csrf_token" value="">
 		<button type="submit" class="btn btn-default delete" id="submit" type="submit">
 		<span class="glyphicon glyphicon-trash" aria-hidden="true"></span>Delete</button>
-
 	</form>
 	<a href = '{{ url_for('projectCategory',project = project,projectcategory=projectcategory) }}' >
 		<button class="btn btn-default delete" type="button">
