@@ -20,6 +20,7 @@ This project was developed under the [**Full-Stack-Developer Nano Degree Program
 -----------------------------------------------------------
 
 The project has been run from a vagrant virtual machine, but basically the main requirements are the following:
+
 1. Python 2.7
 2. SQLite
 3. SQLAlchemy
