@@ -75,6 +75,8 @@ def showLogin():
   login_session['state'] = state
   return render_template('login.html', STATE = state)
 
+# Connect to Gmail and store credentials and fields
+@csrf.exempt
 @app.route('/gconnect', methods=['POST'])
 def gconnect():
   output = social_login_helper.google_connect(request,login_session)
@@ -85,6 +87,8 @@ def gconnect():
 def gdisconnect():
   social_login_helper.google_disconnect(login_session)
 
+# Connect to Fbook and store credentials and fields
+@csrf.exempt
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
   output = social_login_helper.fb_connect(request,login_session)
@@ -159,13 +163,15 @@ def projectMain(project):
 #JSON APIs to view Project Information
 @app.route('/<project>/<projectcategory>/JSON')
 def projectCategoryJSON(project,projectcategory):
-  project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
+  # project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
+  project_list = db_helper.jsonRequest()
   return jsonify(Projects=[i.serialize for i in project_list])
 
 #XML APIs to view Project Information
 @app.route('/<project>/<projectcategory>/XML')
 def projectCategoryXML(project,projectcategory):
-  project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
+  # project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
+  project_list = db_helper.jsonRequest()
   return Response(create_xml(project,projectcategory,project_list), mimetype='application/xml')
 
 # Route for Project Category Page
@@ -260,11 +266,8 @@ def allowed_file(filename):
 
 # Route for creating new Project
 @app.route('/<project>/<projectcategory>/new', methods=['GET','POST'])
+@login_required
 def newProject(project,projectcategory):
-
-  # Check to see if user in logged in or not
-  if 'username' not in login_session:
-    return redirect('/login')
 
   # Handle the POST request  
   if request.method == 'POST':
