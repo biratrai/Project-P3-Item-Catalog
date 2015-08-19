@@ -17,6 +17,7 @@
 		<div class="col-md-6 col-md-offset-1 padding-top">
 			<form action="{{ url_for('editProject',project=project,projectcategory=projectcategory,project_no=project_no) }}" method = "post">
 				<div class="form-group">
+					<input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
 					<label for="name">Current Project Url:</label>
 					<input type ="text" class="form-control" name="name" value="{{ project_url }}" placeholder="Enter the new project url">
 					
