@@ -1,14 +1,16 @@
 # Imports for Flask
-from flask import Flask,render_template, url_for, redirect, flash, request, jsonify 
+from flask import Flask, render_template, url_for
+from flask import redirect, flash, request, jsonify
 from Catalog import app
 from datetime import datetime
 
 # Imports for DB Session
 import db_helper
 
-#Imports for using OAuth
+# Imports for using OAuth
 from flask import session as login_session
-import random, string
+import random
+import string
 import os
 from flask import send_from_directory
 
@@ -29,29 +31,35 @@ from werkzeug import secure_filename
 from flask import send_from_directory
 UPLOAD_FOLDER = 'Catalog/static/'
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','JPG'])
+ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'JPG'])
 # This is the path to the upload directory
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # These are the extension that we are accepting to be uploaded
-app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif','JPG'])
+app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf',
+'png', 'jpg', 'jpeg', 'gif', 'JPG'])
 
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
-APPLICATION_NAME= "Restaurant Menu Application"
+APPLICATION_NAME = "Restaurant Menu Application"
 
 # Project Variables
-project_fullstack = ['Movie Trailer Website','Tournament Results','Item Catalog','Conference Organization App','Linux Server Configuration']
-project_frontend = ['PROJECT P1: Build a Portfolio Site','PROJECT P2: Interactive Resume','PROJECT P3: Classic Arcade Game Clone',
-	'PROJECT P4: Website Optimization','PROJECT P5: Neighborhood Map','PROJECT P6: Feed Reader Testing','Additional Projects']
-project_ios = ['PROJECT P1: Pitch Perfect','PROJECT P2: MemeMe','PROJECT P3: On the Map','PROJECT P4: Virtual Tourist','Additional Projects']
+project_fullstack = ['Movie Trailer Website', 'Tournament Results',
+'Item Catalog', 'Conference Organization App', 'Linux Server Configuration']
+project_frontend = ['PROJECT P1: Build a Portfolio Site',
+'PROJECT P2: Interactive Resume',
+'PROJECT P3: Classic Arcade Game Clone',
+'PROJECT P4: Website Optimization', 'PROJECT P5: Neighborhood Map',
+'PROJECT P6: Feed Reader Testing', 'Additional Projects']
+project_ios = ['PROJECT P1: Pitch Perfect', 'PROJECT P2: MemeMe',
+'PROJECT P3: On the Map', 'PROJECT P4: Virtual Tourist', 'Additional Projects']
 project_android = ['P1', 'P2']	
 project_other = ['O1', 'O2']
-projects = ["Project1","Project2","Project3","Project4","Project5"]	
+projects = ["Project1", "Project2", "Project3", "Project4", "Project5"]	
 
-#Create anti-forgery state token
 @app.route('/login')
 def showLogin():
+  ''' Create anti-forgery state token '''
   state = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in xrange(32))
   login_session['state'] = state
   return render_template('login.html', STATE = state)
@@ -143,7 +151,7 @@ def projectCategoryJSON(project,projectcategory):
 
 #XML APIs to view Project Information
 @app.route('/<project>/<projectcategory>/XML')
-def projectCategoryJSON(project,projectcategory):
+def projectCategoryXML(project,projectcategory):
   project_list = session.query(Project).filter_by(projectname_id = project,projectcategory_id=projectcategory).all()
   return Response(create_xml(project,projectcategory,project_list), mimetype='application/xml')
 
@@ -184,14 +192,16 @@ def send_file(filename):
 # Route for editing project
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
 def editProject(project,projectcategory,project_no):
-  editedProject = db_helper.edit_project(project_no)
+  
+  # Check to see if user in logged in or not
+  if 'username' not in login_session:
+    return redirect('/login')
+  else:  
+    editedProject = db_helper.edit_project(project_no)
 
   if editedProject.author_id != login_session['user_id']:
     return "<script>function myFunction() {alert('You are not authorized to edit this project. Please create your own project in order to edit.');}</script><body onload='myFunction()''>"
   
-  if 'username' not in login_session:
-    return redirect('/login')
-
   if request.method == 'POST':
     if request.form['name']:
       editedProject.project_url = request.form['name']
@@ -205,12 +215,13 @@ def editProject(project,projectcategory,project_no):
 # Route for deleting project
 @app.route('/<project>/<projectcategory>/<int:project_no>/delete/',methods=['GET', 'POST'])
 def deleteProject(project,projectcategory,project_no):
-  projectToDelete = db_helper.delete_project(project_no)
-
+  
   # Check to see if user in logged in or not
   if 'username' not in login_session:
     return redirect('/login')
-	
+  else:
+    projectToDelete = db_helper.delete_project(project_no)
+
   # Alert user if they are authorized to delete the project
   if projectToDelete.author_id != login_session['user_id']:
     return "<script>function myFunction() {alert('You are not authorized to project this project. Please create your own project in order to delete.');}</script><body onload='myFunction()''>"
@@ -250,7 +261,7 @@ def newProject(project,projectcategory):
       file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
       image_url = url_for('static',filename=file.filename)
-      
+
     # Save data into database  
     newProject = db_helper.new_project(request.form['url'],
       login_session['user_id'],request.form['description'],project,projectcategory,image_url)
