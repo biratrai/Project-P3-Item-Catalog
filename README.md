@@ -16,6 +16,18 @@ This project was developed under the [**Full-Stack-Developer Nano Degree Program
 6. Run the runserver.py python file, This will launch the application.
 7. You can check out the page from your browser at http://localhost:8000.
 
+**Requirements**
+-----------------------------------------------------------
+
+The project has been run from a vagrant virtual machine, but basically the main requirements are the following:
+1. Python 2.7
+2. SQLite
+3. SQLAlchemy
+4. Flask
+5. Flask extension SeaSurf
+6. Python libraries: httplib2, oauth2client and Requests
+
+
 **Getting the JSON API**
 -----------------------------------------------------------
 1. The general API end point is : http://localhost:8000/fullstack/p1/JSON
