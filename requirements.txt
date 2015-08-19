@@ -1,0 +1,8 @@
+The project has been run from a vagrant virtual machine, but basically the main requirements are the following:
+
+Python 2.7
+SQLite
+SQLAlchemy
+Flask
+Flask extension SeaSurf
+Python libraries: httplib2, oauth2client and Requests
