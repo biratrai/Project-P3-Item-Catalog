@@ -7,6 +7,10 @@ from datetime import datetime
 # Imports for DB Session
 import db_helper
 
+# Import for Login Decorator
+from functools import wraps
+from flask import g, request
+
 # Imports for using OAuth
 from flask import session as login_session
 import random
@@ -19,7 +23,8 @@ from oauth2client.client import FlowExchangeError
 import httplib2
 import json
 from flask import make_response
-import requests
+
+# import requests
 import social_login_helper
 
 # Imports for XML EndPoints
@@ -31,13 +36,13 @@ from werkzeug import secure_filename
 from flask import send_from_directory
 UPLOAD_FOLDER = 'Catalog/static/'
 
-ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif', 'JPG'])
+# Allowed extensions for the image
+ALLOWED_EXTENSIONS = set(['png', 'jpg', 'jpeg', 'gif', 'JPG'])
 # This is the path to the upload directory
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # These are the extension that we are accepting to be uploaded
-app.config['ALLOWED_EXTENSIONS'] = set(['txt', 'pdf',
-'png', 'jpg', 'jpeg', 'gif', 'JPG'])
+app.config['ALLOWED_EXTENSIONS'] = set(['png', 'jpg', 'jpeg', 'gif', 'JPG'])
 
 CLIENT_ID = json.loads(
   open('Catalog/client_secrets.json', 'r').read())['web']['client_id']
@@ -69,7 +74,7 @@ def gconnect():
   output = social_login_helper.google_connect(request,login_session)
   return output
 
-#Revoke current user's token and reset their login_session.
+#Revoke Gmail user's token and reset their login_session.
 @app.route("/gdisconnect")
 def gdisconnect():
   social_login_helper.google_disconnect(login_session)
@@ -79,11 +84,13 @@ def fbconnect():
   output = social_login_helper.fb_connect(request,login_session)
   return output
 
+#Revoke Fbook user's token and reset their login_session.
 @app.route('/fbdisconnect')
 def fbdisconnect():
   output = social_login_helper.fb_disconnect(login_session)
   return output
 
+# Route for logging out
 @app.route('/disconnect')
 def disconnect():
   if 'provider' in login_session:
@@ -174,8 +181,11 @@ def showProject(project,projectcategory,project_no):
   
   # Handle the POST request  
   if request.method == 'POST':
-    newComment = db_helper.new_comments(request.form['comments'],login_session['user_id'],project_no)
-    return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
+    if 'username' not in login_session:
+          return redirect('/login')
+    else:
+      newComment = db_helper.new_comments(request.form['comments'],login_session['user_id'],project_no)
+      return render_template('single_project.html', project=project,projectcategory=projectcategory,project_no=project_no,
       project_list=list_of_single_project, author_name=author_name,project_comments = list_of_comments)
 
   if 'username' not in login_session or creator.id != login_session['user_id']:
@@ -189,15 +199,21 @@ def showProject(project,projectcategory,project_no):
 def send_file(filename):  
     return send_from_directory(app.static_folder, filename)
 
+# View Decorator for login check
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if 'username' not in login_session:
+          return redirect('/login')
+        return f(*args, **kwargs)
+    return decorated_function
+
 # Route for editing project
 @app.route('/<project>/<projectcategory>/<int:project_no>/edit/',methods=['GET', 'POST'])
+@login_required
 def editProject(project,projectcategory,project_no):
   
-  # Check to see if user in logged in or not
-  if 'username' not in login_session:
-    return redirect('/login')
-  else:  
-    editedProject = db_helper.edit_project(project_no)
+  editedProject = db_helper.edit_project(project_no)
 
   if editedProject.author_id != login_session['user_id']:
     return "<script>function myFunction() {alert('You are not authorized to edit this project. Please create your own project in order to edit.');}</script><body onload='myFunction()''>"
@@ -214,13 +230,10 @@ def editProject(project,projectcategory,project_no):
 
 # Route for deleting project
 @app.route('/<project>/<projectcategory>/<int:project_no>/delete/',methods=['GET', 'POST'])
+@login_required
 def deleteProject(project,projectcategory,project_no):
   
-  # Check to see if user in logged in or not
-  if 'username' not in login_session:
-    return redirect('/login')
-  else:
-    projectToDelete = db_helper.delete_project(project_no)
+  projectToDelete = db_helper.delete_project(project_no)
 
   # Alert user if they are authorized to delete the project
   if projectToDelete.author_id != login_session['user_id']:
@@ -260,6 +273,7 @@ def newProject(project,projectcategory):
       # Move the file form the temporal folder to the upload folder we setup
       file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 
+      # Get image path
       image_url = url_for('static',filename=file.filename)
 
     # Save data into database  
